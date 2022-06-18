@@ -5,17 +5,10 @@ exports.isAuthenticated = async (req, res, next) => {
     try{
         const {token} = req.cookies;
     if (!token) {
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            if (err) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Please login first'
-                });
-            }
-            
-            req.user = decoded;
-            next();
-        });
+        return res.status(401).json({
+            success: false,
+            message: "Please login first",
+          });
     }
     const decoded=jwt.verify(token,process.env.JWT_SECRET);
     req.user=await User.findById(decoded._id);

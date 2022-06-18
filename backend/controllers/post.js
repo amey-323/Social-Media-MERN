@@ -121,8 +121,85 @@ exports.getPostOfFollowing = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Posts fetched successfully',
-            posts
+            posts:posts
         });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+exports.updateCaption = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Post not found'
+            });
+        }
+        if (post.owner.toString() !== req.user._id.toString()) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+        }
+        post.caption = req.body.caption;
+        await post.save();
+        res.status(200).json({
+            success: true,
+            message: 'Post updated successfully',
+            post: post
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+exports.commentOnPost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Post not found'
+            });
+        }
+        let commonIndex=-1;
+        //Check if comment already exists
+        post.comment.forEach((item,index)=>{
+            if(item.user.toString()===req.user._id.toString()){
+                commonIndex=index;
+            }
+        });
+        if(commonIndex!==-1){
+            post.comments[commonIndex].comment=req.body.comment;
+
+            await post.save();
+            res.status(200).json({
+                success: true,
+                message: 'Comment Updated successfully',
+                post: post
+            });
+        }else{
+            post.comments.push({
+                comment: req.body.comment,
+                user: req.user._id,
+                postedAt: Date.now()
+            });
+            await post.save();
+            res.status(200).json({
+                success: true,
+                message: 'Comment added'
+            });
+        }
     }
     catch (error) {
         res.status(500).json({
