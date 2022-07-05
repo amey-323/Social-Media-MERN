@@ -288,7 +288,7 @@ exports.myProfile = async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      data: user,
+      user,
     });
   } catch (error) {
     res.status(500).json({
